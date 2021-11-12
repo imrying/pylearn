@@ -1,0 +1,16 @@
+<form action="" method="post">
+    {% csrf_token %}
+    <label for="username">Username: </label>
+    <input id="username" type="text" name="username" value="{{ current_name }}">
+
+    <br>
+
+    <label for="password">Password: </label>
+    <input id="password" type="password" name="password" value="{{ current_password }}">
+
+    <input type="submit" value="OK">
+
+    {{ username }}
+    {{ password }}
+
+</form>
