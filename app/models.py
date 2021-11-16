@@ -6,10 +6,12 @@ from django.db.models.fields.files import FileField
 # Create your models here.
 
 class Student(models.Model):
+    email = models.EmailField(max_length=200, unique=True)
     username = models.CharField(max_length=200, unique=True)
     password_hash = models.CharField(max_length=200)
 
 class Teacher(models.Model):
+    email = models.EmailField(max_length=200, unique=True)
     username = models.CharField(max_length=200, unique=True)
     password_hash = models.CharField(max_length=200)
 
