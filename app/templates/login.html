@@ -35,6 +35,21 @@
     <h1>Login Page</h1>
         <form action="" method="post">
         {% csrf_token %}
+
+        <div class="mb-3">
+            <input class="form-check-input" type="radio" name="usertype" id="student" value="student">
+            <label class="form-check-label" for="student">
+                Login as student
+            </label>
+        </div>
+
+        <div class="mb-3">
+            <input class="form-check-input" type="radio" name="usertype" id="teacher" value="teacher">
+            <label class="form-check-label" for="teacher">
+                Login as teacher
+            </label>
+        </div>
+
         <div class="mb-3">
             <label for="username" class="form-label">Username</label>
             <input name="username" type="username" class="form-control" id="username" aria-describedby="usernameHelp">
