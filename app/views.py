@@ -2,6 +2,7 @@ from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 import hashlib
+import re
 
 from .models import *
 
@@ -13,31 +14,65 @@ def register(request):
     }
 
     if request.method == 'POST':
-        try:
-            usertype = request.POST['usertype']
-            print(usertype)
-            email = request.POST['email']
-            username = request.POST['username']
-            password = hashlib.sha256(str(request.POST['password']+SIGNING_SALT).encode('utf8')).hexdigest()
-            cpassword = hashlib.sha256(str(request.POST['cpassword']+SIGNING_SALT).encode('utf8')).hexdigest()
-            context['username']=username
-            context['password']=password
-        except Exception as e:
-            print(e)
-            email = ""
-            username = ""
-            password = ""
-            cpassword = ""
-            context['error_messages'].append('Venligst udfyld alle felter korrekt')
+        usertype = request.POST.get('usertype')
+        db_table = Teacher if usertype == "teacher" else Student
 
-        # check if username exists
+        email = request.POST.get('email')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        cpassword = request.POST.get('cpassword')
+
+        # hash passwords
+        hashed_password = hashlib.sha256(str(
+            password+SIGNING_SALT).encode('utf8')).hexdigest()
+        hashed_cpassword = hashlib.sha256(str(
+            cpassword+SIGNING_SALT).encode('utf8')).hexdigest()
+
+        # add user inputs to context
+        context['email'] = email
+        context['username'] = username
+        context['password'] = password
+        context['cpassword'] = cpassword
+
+        # try:
+        #     usertype = request.POST['usertype']
+        #     db_table = Student if usertype == "student" else Teacher
+        #     print(usertype)
+        #     email = request.POST['email']
+        #     username = request.POST['username']
+        #     password = request.POST['password']
+        #     hashed_password = hashlib.sha256(str(request.POST['password']+SIGNING_SALT).encode('utf8')).hexdigest()
+        #     cpassword = hashlib.sha256(str(request.POST['cpassword']+SIGNING_SALT).encode('utf8')).hexdigest()
+        #     context['username']=username
+        #     context['password']=password
+        # except Exception as e:
+        #     print(e)
+        #     email = ""
+        #     username = ""
+        #     hashed_password = ""
+        #     password = ""
+        #     cpassword = ""
+        #     context['error_messages'].append('Venligst udfyld alle felter korrekt')
+
+        # check if username and/or email exists
+        uname_exists = db_table.objects.filter(username=username).exists()
+        email_exists = db_table.objects.filter(email=email).exists()
+        if uname_exists:
+            context['error_messages'].append('Brugernavnet eksisterer allerede')
+        if email_exists:
+            context['error_messages'].append('Emailen eksisterer allerede')
 
         # check if email is valid
+        if not re.fullmatch(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
+            context['error_messages'].append('Ugyldig email adresse')
 
         # check if password is valid
+        if not re.fullmatch(r'[A-Za-z0-9@#$%^&+=]{8,}', password):
+            context['error_messages'].append('Adgangskoden skal indeholde: Store bogstaver, tal og special karaktere samt være 8 karaktere lang')
+
 
         # check if password equals confirm-password
-        if password != cpassword:
+        if hashed_password != hashed_cpassword:
             context['error_messages'].append('Passwords matcher ikke')
 
         #everything worked. Add the teacher to db.
@@ -45,13 +80,12 @@ def register(request):
         if len(context['error_messages']) == 0:
             log_user_in(request, username)
 
+            new_user = db_table(email=email, username=username, password_hash=hashed_password)
+            new_user.save()
+
             if usertype == 'teacher':
-                teacher = Teacher(email=email, username=username, password_hash=password)
-                teacher.save()
                 return redirect('/teacher/')
             else:
-                student = Student(email=email, username=username, password_hash=password)
-                student.save()
                 return redirect('/student/')
 
 
@@ -95,7 +129,7 @@ def teacher_view(request):
     #teacher = Teacher.objects.get(id=teacher_id)
     username = request.session.get('username')
     if username != None:
-        return HttpResponse(username)
+        return render(request, 'teacher.html')
     return redirect('/login')
 
 def student_view(request):

@@ -17,12 +17,15 @@ class Teacher(models.Model):
 
 class SchoolClass(models.Model):
     class_name = models.CharField(max_length=200, unique=True)
+    class_code = models.IntegerField()
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     students = models.ManyToManyField(Student)
+
 
 class Assignment(models.Model):
     assignment_name = models.CharField(max_length=200)
     school_class = models.ForeignKey(SchoolClass, on_delete=models.CASCADE)
+
 
 class Test(models.Model):
     test_cases = FileField()
