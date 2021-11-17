@@ -70,13 +70,11 @@ def register(request):
         if not re.fullmatch(r'[A-Za-z0-9@#$%^&+=]{8,}', password):
             context['error_messages'].append('Adgangskoden skal indeholde: Store bogstaver, tal og special karaktere samt være 8 karaktere lang')
 
-
         # check if password equals confirm-password
         if hashed_password != hashed_cpassword:
             context['error_messages'].append('Passwords matcher ikke')
 
         #everything worked. Add the teacher to db.
-        
         if len(context['error_messages']) == 0:
             log_user_in(request, username)
 
@@ -92,33 +90,30 @@ def register(request):
     return render(request, 'register.html', context)
 
 
-
 def login(request):
     context = {
         'error_messages': []
     }
 
     if request.method == 'POST':
-        try:
-            usertype = request.POST['usertype']
-            username = request.POST['username']
-            password = hashlib.sha256(str(request.POST['password']+SIGNING_SALT).encode('utf8')).hexdigest()
-            
-            if usertype == 'teacher':
-                if Teacher.objects.get(username=username).password_hash == password:
-                    log_user_in(request, username)
-                    return redirect('/teacher/')
+        usertype = request.POST.get('usertype')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        hashed_password = hashlib.sha256(str(password+SIGNING_SALT).encode('utf8')).hexdigest()
+        
+        # save username and password to the context
+        context['username'] = username
+        context['password'] = password
 
-            else:
-                if Student.objects.get(username=username).password_hash == password:
-                    log_user_in(request, username)
-                    return redirect('/student/')
-            
-        except Exception as e:
-            context['error_messages'].append('Fejl i brugernavn eller password')
-            print(e)
-            username = ""
-            password = ""
+        # check if user exists and then log in
+        db_table = Teacher if usertype == "teacher" else Student
+        if db_table.objects.filter(username=username, hash_password=hashed_password).exists():
+            log_user_in(request, username)
+            if usertype == 'teacher':
+                return redirect('/teacher/')
+            return redirect('/student/')
+
+        context['error_messages'].append('Brugernavn eller password passer ikke')    
     
     return render(request, 'login.html', context)
 
@@ -126,11 +121,18 @@ def log_user_in(request, username):
     request.session['username'] = username
 
 def teacher_view(request):
+    username = request.session['username']
+    context = {'username': username}
+    if username == None:
+        return redirect('/login')
     #teacher = Teacher.objects.get(id=teacher_id)
     username = request.session.get('username')
-    if username != None:
-        return render(request, 'teacher.html')
-    return redirect('/login')
+
+
+    return render(request, 'teacher.html', context)
+
+def teacher_create_class(request):
+    return render(request, 'teacher_create_class.html')
 
 def student_view(request):
     username = request.session.get('username')
