@@ -4,6 +4,7 @@ from django.shortcuts import redirect, render
 import hashlib
 import random
 import string
+import json
 import re
 
 from .models import *
@@ -35,26 +36,6 @@ def register(request):
         context['username'] = username
         context['password'] = password
         context['cpassword'] = cpassword
-
-        # try:
-        #     usertype = request.POST['usertype']
-        #     db_table = Student if usertype == "student" else Teacher
-        #     print(usertype)
-        #     email = request.POST['email']
-        #     username = request.POST['username']
-        #     password = request.POST['password']
-        #     hashed_password = hashlib.sha256(str(request.POST['password']+SIGNING_SALT).encode('utf8')).hexdigest()
-        #     cpassword = hashlib.sha256(str(request.POST['cpassword']+SIGNING_SALT).encode('utf8')).hexdigest()
-        #     context['username']=username
-        #     context['password']=password
-        # except Exception as e:
-        #     print(e)
-        #     email = ""
-        #     username = ""
-        #     hashed_password = ""
-        #     password = ""
-        #     cpassword = ""
-        #     context['error_messages'].append('Venligst udfyld alle felter korrekt')
 
         # check if username and/or email exists
         uname_exists = db_table.objects.filter(username=username).exists()
@@ -136,9 +117,17 @@ def teacher_view(request):
     context['teacher_classes'] = teacher_classes
 
     # Find alle lærenes opgaver
-    teacher_assignments = filter(lambda x: x.school_class.teacher.username == username, Assignment.objects.all())
-    context['teacher_assignments'] = teacher_assignments
-    
+    _teacher_assignments_ = filter(lambda x: x.school_class.teacher.username == username, Assignment.objects.all())
+    teacher_assignments = []
+    for i in _teacher_assignments_:
+        teacher_assignments.append({
+            "name": i.assignment_name,
+            "class_code": i.school_class.class_code
+        })
+
+    context['username'] = "HEASDAS"
+    context['teacher_assignments'] = json.dumps(teacher_assignments)
+    print(context['teacher_assignments'])
     return render(request, 'teacher.html', context)
 
 def teacher_create_class(request):
