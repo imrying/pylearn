@@ -132,11 +132,13 @@ def teacher_view(request):
     username = request.session.get('username')
 
     # Find alle lærenes klasser
-    # teacher_id = Teacher.objects.filter(username=username)
-    # print(SchoolClass.objects.filter(teacher=1))
     teacher_classes = filter(lambda x: x.teacher.username == username, SchoolClass.objects.all())
     context['teacher_classes'] = teacher_classes
 
+    # Find alle lærenes opgaver
+    teacher_assignments = filter(lambda x: x.school_class.teacher.username == username, Assignment.objects.all())
+    context['teacher_assignments'] = teacher_assignments
+    
     return render(request, 'teacher.html', context)
 
 def teacher_create_class(request):

@@ -25,6 +25,7 @@ class SchoolClass(models.Model):
 
 class Assignment(models.Model):
     assignment_name = models.CharField(max_length=200)
+    # assignment_description = models.CharField(max_length=200)
     school_class = models.ForeignKey(SchoolClass, on_delete=models.CASCADE)
 
 
