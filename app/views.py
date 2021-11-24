@@ -155,6 +155,8 @@ def teacher_create_class(request):
                                     class_code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)), 
                                     teacher = teacher)
             new_class.save()
+            return redirect('/teacher')
+
         except Exception as e:
             print(e)
     
