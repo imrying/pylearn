@@ -2,6 +2,8 @@ from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 import hashlib
+import random
+import string
 import re
 
 from .models import *
@@ -107,7 +109,7 @@ def login(request):
 
         # check if user exists and then log in
         db_table = Teacher if usertype == "teacher" else Student
-        if db_table.objects.filter(username=username, hash_password=hashed_password).exists():
+        if db_table.objects.filter(username=username, password_hash=hashed_password).exists():
             log_user_in(request, username)
             if usertype == 'teacher':
                 return redirect('/teacher/')
@@ -138,12 +140,57 @@ def teacher_view(request):
     return render(request, 'teacher.html', context)
 
 def teacher_create_class(request):
-    return render(request, 'teacher_create_class.html')
+    if request.method == 'POST':
+        class_name = request.POST.get('class_name')
+        class_description = request.POST.get('class_description')
+        print(class_name)
+        print(class_description)
+        teacher = Teacher.objects.get(username=request.session.get('username'))
 
+        try:
+            new_class = SchoolClass(class_name = class_name, 
+                                    class_description = class_description, 
+                                    class_code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)), 
+                                    teacher = teacher)
+            new_class.save()
+        except Exception as e:
+            print(e)
+    
+    return render(request, 'teacher_create_class.html')
+            
+ 
 def student_view(request):
     username = request.session.get('username')
     if username != None:
         return HttpResponse(username)
     return redirect('/login')
+
+def front_page(request):
+    
+    context = {
+        'error_messages': []
+    }
+
+    if request.method == 'POST':
+        usertype = request.POST.get('usertype')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        hashed_password = hashlib.sha256(str(password+SIGNING_SALT).encode('utf8')).hexdigest()
+        
+        # save username and password to the context
+        context['username'] = username
+        context['password'] = password
+
+        # check if user exists and then log in
+        db_table = Teacher if usertype == "teacher" else Student
+        if db_table.objects.filter(username=username,password_hash=hashed_password).exists():
+            log_user_in(request, username)
+            if usertype == 'teacher':
+                return redirect('/teacher/')
+            return redirect('/student/')
+
+        context['error_messages'].append('Brugernavn eller password passer ikke') 
+
+    return render(request, 'front_page.html', context)
 
     
