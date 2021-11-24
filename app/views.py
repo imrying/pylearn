@@ -121,13 +121,19 @@ def log_user_in(request, username):
     request.session['username'] = username
 
 def teacher_view(request):
-    username = request.session['username']
+    username = request.session.get("username")
     context = {'username': username}
+
     if username == None:
-        return redirect('/login')
-    #teacher = Teacher.objects.get(id=teacher_id)
+        return redirect('/')
+    
     username = request.session.get('username')
 
+    # Find alle lærenes klasser
+    # teacher_id = Teacher.objects.filter(username=username)
+    # print(SchoolClass.objects.filter(teacher=1))
+    teacher_classes = filter(lambda x: x.teacher.username == username, SchoolClass.objects.all())
+    context['teacher_classes'] = teacher_classes
 
     return render(request, 'teacher.html', context)
 
