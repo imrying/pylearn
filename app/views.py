@@ -107,7 +107,7 @@ def login(request):
 
         # check if user exists and then log in
         db_table = Teacher if usertype == "teacher" else Student
-        if db_table.objects.filter(username=username, hash_password=hashed_password).exists():
+        if db_table.objects.filter(username=username, password_hash=hashed_password).exists():
             log_user_in(request, username)
             if usertype == 'teacher':
                 return redirect('/teacher/')
@@ -139,5 +139,33 @@ def student_view(request):
     if username != None:
         return HttpResponse(username)
     return redirect('/login')
+
+def front_page(request):
+    
+    context = {
+        'error_messages': []
+    }
+
+    if request.method == 'POST':
+        usertype = request.POST.get('usertype')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        hashed_password = hashlib.sha256(str(password+SIGNING_SALT).encode('utf8')).hexdigest()
+        
+        # save username and password to the context
+        context['username'] = username
+        context['password'] = password
+
+        # check if user exists and then log in
+        db_table = Teacher if usertype == "teacher" else Student
+        if db_table.objects.filter(username=username,password_hash=hashed_password).exists():
+            log_user_in(request, username)
+            if usertype == 'teacher':
+                return redirect('/teacher/')
+            return redirect('/student/')
+
+        context['error_messages'].append('Brugernavn eller password passer ikke') 
+
+    return render(request, 'front_page.html', context)
 
     
