@@ -144,6 +144,8 @@ def teacher_create_class(request):
                                     class_code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)), 
                                     teacher = teacher)
             new_class.save()
+            return redirect('/teacher')
+
         except Exception as e:
             print(e)
     
@@ -184,4 +186,6 @@ def front_page(request):
 
     return render(request, 'front_page.html', context)
 
+def teacher_create_assignment(request):
+    return render(request, 'teacher_create_assignment.html')
     
