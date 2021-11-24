@@ -2,6 +2,8 @@ from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 import hashlib
+import random
+import string
 import re
 
 from .models import *
@@ -132,8 +134,25 @@ def teacher_view(request):
     return render(request, 'teacher.html', context)
 
 def teacher_create_class(request):
-    return render(request, 'teacher_create_class.html')
+    if request.method == 'POST':
+        class_name = request.POST.get('class_name')
+        class_description = request.POST.get('class_description')
+        print(class_name)
+        print(class_description)
+        teacher = Teacher.objects.get(username=request.session.get('username'))
 
+        try:
+            new_class = SchoolClass(class_name = class_name, 
+                                    class_description = class_description, 
+                                    class_code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)), 
+                                    teacher = teacher)
+            new_class.save()
+        except Exception as e:
+            print(e)
+    
+    return render(request, 'teacher_create_class.html')
+            
+ 
 def student_view(request):
     username = request.session.get('username')
     if username != None:
