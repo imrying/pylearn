@@ -197,4 +197,6 @@ def front_page(request):
 
     return render(request, 'front_page.html', context)
 
+def teacher_create_assignment(request):
+    return render(request, 'teacher_create_assignment.html')
     
