@@ -18,9 +18,9 @@
     <center><h1 class="mt-5">Velkommen {{username}}!</h1></center>
 
     <div class="container-lg mt-5 mb-5">
-        <div class="row align-items-start">
-            <div class="col-4">
-            <div class="bg-white shadow shadow px-4 py-4">
+      <div class="row align-items-start">
+          <div class="col-4">
+            <div class="bg-white shadow px-4 py-4">
               <div class="row">
 
                 
@@ -44,22 +44,23 @@
                     <h5> Kode: </h5> <p id="shown_class_code"></p>
                     </div>
                   </div>
-              </div>
-              </div>
+            </div>
+
+            <div class="px-4 py-4">
+              <h3 class="mt-4">Opgaver </h3>
+              <a class='width-100'>Lav opgave</a>
 
               <!-- Opgaver -->
-              <div class="row">
-                <div class="col-3">Dato</div>
-                <div class="col-9">Navn</div>
-                
-              </div>
-              <div class="row" id="shown_assignments">
-                ..
+              <div class="mt-3 row" id="shown_assignments">
                 <!-- Change this with javascript -->
               </div>
-              
             </div>
-            <div class="col-8">Assignments</div>
+          </div>
+
+          <!-- Detaljeret beskrivelse af opgaven -->
+          <div class="col-8" id="assignment_description">
+            <!-- Change with javascript -->
+          </div>
       </div>
     </div>
 
@@ -68,8 +69,22 @@
     <script>
       function selectAssignment(obj) {
         obj = JSON.parse(decodeURIComponent(obj));
-      }
+        console.log(obj);
+        let html = '<h4>' + obj.name + ' - ' + obj.class_name + '</h4>\
+            <h5> Beskrivelse</h5>\
+            <p style="width:65%">' + '</p>\
+            <h5>Inputs</h5>\
+            <p style="width:65%">' + '</p>\
+            <h5>Outputs</h5>\
+            <p style="width:65%">' + '</p>\
+            <h5>Afleveringsfrist</h5>\
+            <p style="width:65%">' + '</p>\
+            <button class="btn btn-info" type="button">Rediger opgave</button>\
+            <button class="btn btn-danger" type="button">Slet opgave</button>\
+          ';
 
+        document.getElementById('assignment_description').innerHTML = html;
+      }
 
       function updateClassCode() {
         var class_code = document.getElementById("classes").value;
@@ -81,7 +96,6 @@
         for (var i = 0; i < g.length; i++) {
           var obj = g[i];
           if (obj.class_code == class_code) {
-            console.log();
             htmlcode += "<div class='col-3'>1/11</div><div class='col-9'><button class='btn btn-primary' onclick='selectAssignment(\"" + encodeURIComponent(JSON.stringify(obj)) + "\")'>Knap</button></div>";
           }
         }
