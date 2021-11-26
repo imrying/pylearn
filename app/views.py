@@ -120,14 +120,16 @@ def teacher_view(request):
     _teacher_assignments_ = filter(lambda x: x.school_class.teacher.username == username, Assignment.objects.all())
     teacher_assignments = []
     for i in _teacher_assignments_:
+        print('-'*50)
+        print(dir(i))
+        print('-'*50)
         teacher_assignments.append({
             "name": i.assignment_name,
+            "class_name": i.school_class.class_name,
             "class_code": i.school_class.class_code
         })
 
-    context['username'] = "HEASDAS"
     context['teacher_assignments'] = json.dumps(teacher_assignments)
-    print(context['teacher_assignments'])
     return render(request, 'teacher.html', context)
 
 def teacher_create_class(request):

@@ -67,8 +67,7 @@
     <p>{{username}}</p>
     <script>
       function selectAssignment(obj) {
-        console.log(JSON.parse(decodeURIComponent(obj)));
-        // obj);
+        obj = JSON.parse(decodeURIComponent(obj));
       }
 
 

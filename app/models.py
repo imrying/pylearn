@@ -22,12 +22,16 @@ class SchoolClass(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     students = models.ManyToManyField(Student, blank=True)
 
+class Answer(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    code = models.FileField()
+    results = models.CharField(max_length=1024, blank=True)
 
 class Assignment(models.Model):
     assignment_name = models.CharField(max_length=200)
-    # assignment_description = models.CharField(max_length=200)
+    assignment_description = models.CharField(max_length=200)
+    assignment_answers = models.ManyToManyField(Answer, blank=True)
     school_class = models.ForeignKey(SchoolClass, on_delete=models.CASCADE)
-
 
 class Test(models.Model):
     test_cases = FileField()
@@ -37,6 +41,3 @@ class TestCase(models.Model):
     test = models.ForeignKey(Test,on_delete=models.CASCADE)
     input = CharField(max_length=200)
     output = CharField(max_length=200)
-
-
-
