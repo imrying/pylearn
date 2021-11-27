@@ -27,17 +27,23 @@ class Answer(models.Model):
     code = models.FileField()
     results = models.CharField(max_length=1024, blank=True)
 
+
+
+class TestCase(models.Model):
+    input = CharField(max_length=200)
+    output = CharField(max_length=200)
+
+class Test(models.Model):
+    test_case = models.ForeignKey(TestCase,on_delete=models.CASCADE)
+
 class Assignment(models.Model):
     assignment_name = models.CharField(max_length=200)
     assignment_description = models.CharField(max_length=200)
+    input_description = models.CharField(max_length=200)
+    output_description = models.CharField(max_length=200)
+    limit_description = models.CharField(max_length=200)
+    due_date = models.DateField()
     assignment_answers = models.ManyToManyField(Answer, blank=True)
     school_class = models.ForeignKey(SchoolClass, on_delete=models.CASCADE)
+    test = models.ForeignKey(Test,on_delete=models.CASCADE) 
 
-class Test(models.Model):
-    test_cases = FileField()
-    assignment = models.ForeignKey(Assignment,on_delete=models.CASCADE)
-
-class TestCase(models.Model):
-    test = models.ForeignKey(Test,on_delete=models.CASCADE)
-    input = CharField(max_length=200)
-    output = CharField(max_length=200)
