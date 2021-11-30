@@ -12,17 +12,17 @@
   </head>
   <body>
     <div class="container-lg mt-5">
-
         <div class="row align-items-start">
             <div class="col"></div>
             <div class="col">
               <h1>Opret Klasse</h1>
+
+              {% for em in error_messages %}
+              <p class="text-danger">{{em}}</p>
+              {% endfor %}
+
               <form action="" method="post">
                 {% csrf_token %}
-
-                {% for em in error_messages %}
-                  <p class="text-danger">{{em}}</p>
-                {% endfor %}
 
                 <div class="mb-3">
                     <label for="class_name" class="form-label">Navn</label>
@@ -31,7 +31,7 @@
 
                 <div class="mb-3">
                     <label for="class_description" class="form-label">Beskrivelse</label>
-                    <textarea name="class_description" class="form-control" id="class_description" rows="3" style="min-width: 100%"></textarea>
+                    <textarea name="class_description" class="form-control" id="class_description" rows="3" style="min-width: 100%">{{class_description}}</textarea>
                 </div>
 
                 

@@ -138,21 +138,37 @@ def teacher_view(request):
 
 def teacher_create_class(request):
     if request.method == 'POST':
+        context = {
+            'error_messages': []
+        }
         class_name = request.POST.get('class_name')
+        if class_name: 
+            context['class_name']= class_name
+
         class_description = request.POST.get('class_description')
-        print(class_name)
-        print(class_description)
+        if class_description: 
+            context['class_description']= class_description
+
         teacher = Teacher.objects.get(username=request.session.get('username'))
 
-        try:
-            new_class = SchoolClass(class_name = class_name, 
-                                    class_description = class_description, 
-                                    class_code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)), 
-                                    teacher = teacher)
-            new_class.save()
-            return redirect('/teacher')
-        except Exception as e:
-            print(e)
+
+        if len(class_name) < 1:
+            context['error_messages'].append('Indtast venligst et navn')
+        if len(class_description) < 50:
+            context['error_messages'].append('Beskrivelsen skal min. indeholde 50 tegn')
+
+        if len(context['error_messages']) == 0:
+            try:
+                new_class = SchoolClass(class_name = class_name, 
+                                        class_description = class_description, 
+                                        class_code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)), 
+                                        teacher = teacher)
+                new_class.save()
+                return redirect('/teacher')
+            except Exception as e:
+                print(e)
+        else:
+            return render(request, 'teacher_create_class.html', context)
     
     return render(request, 'teacher_create_class.html')
             
@@ -206,7 +222,7 @@ def front_page(request):
 
 def teacher_create_assignment(request):
     username = request.session.get("username")
-    context = {'username': username}
+    context = {'username': username, 'error_messages': []}
 
     if username == None:
         return redirect('/')
@@ -216,18 +232,53 @@ def teacher_create_assignment(request):
         context['teacher_classes'] = teacher_classes
     except Exception as e:
         print(e)
-    try:
-        if request.method == 'POST' and request.FILES['input_file'] and request.FILES['output_file']:
-        
-            name = request.POST.get('name')
-            assignment_description = request.POST.get('assignment_description')
-            input_description = request.POST.get('input_description')
-            output_description = request.POST.get('output_description')
-            limit_description = request.POST.get('limit_description')
-            class_code = request.POST.get('class_name')
-            due_date = request.POST.get('date')
-            input_file = request.FILES.get('input_file')
-            output_file = request.FILES.get('output_file')
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        if name:
+            context['name'] = name
+        assignment_description = request.POST.get('assignment_description')
+        if assignment_description:
+            context['assignment_description'] = assignment_description
+        input_description = request.POST.get('input_description')
+        if input_description:
+            context['input_description'] = input_description
+        output_description = request.POST.get('output_description')
+        if output_description:
+            context['output_description'] = output_description
+        limit_description = request.POST.get('limit_description')
+        if limit_description:
+            context['limit_description'] = limit_description
+        class_code = request.POST.get('class_name')
+        if class_code:
+            context['class_code'] = class_code
+        due_date = request.POST.get('date')
+        if due_date:
+            context['due_date'] = due_date
+        input_file = request.FILES.get('input_file') 
+        output_file = request.FILES.get('output_file')
+
+        # Check for errors
+        if len(name) < 1:
+            context['error_messages'].append('Venligst angiv et navn til opgaven')
+        if len(assignment_description) < 50:
+            context['error_messages'].append('Opgave beskrivelsen skal min. indeholde 50 tegn')
+        if len(input_description) < 50:
+            context['error_messages'].append('Input beskrivelsen skal min. indeholde 50 tegn')
+        if len(output_description) < 50:
+            context['error_messages'].append('Output beskrivelsen skal min. indeholde 50 tegn')
+        if len(limit_description) < 50:
+            context['error_messages'].append('Begrænsnings beskrivelsen skal min. indeholde 50 tegn')
+        if not class_code:
+            context['error_messages'].append('Angiv venligst en klasse')
+        if not due_date:
+            context['error_messages'].append('Venligst angiv en Afleveringsfrist')
+        if not input_file:
+            context['error_messages'].append('Venligst upload en input fil')
+        if not output_file:
+            context['error_messages'].append('Venligst upload en output fil')        
+
+        if len(context['error_messages']) == 0:
             fs = FileSystemStorage()
             input_name = "input" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + input_file.name
             output_name = "output" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + input_file.name
@@ -237,7 +288,15 @@ def teacher_create_assignment(request):
             test_case.save()
             test = Test(test_case=test_case)
             test.save()
-            school_class = SchoolClass.objects.get(class_code=class_code)
+            print(')============================(')
+            print('FAILING AT School class')
+            try:
+                school_class = SchoolClass.objects.get(class_code=class_code)
+            except: 
+                # Couldnt find school class
+                pass
+            print(')============================(')
+            print('FAILING AT ASSIGN')
             assignment = Assignment(assignment_name = name, 
                                     assignment_description=assignment_description, 
                                     input_description=input_description,
@@ -248,8 +307,9 @@ def teacher_create_assignment(request):
                                     test = test
                                     )
             assignment.save()
-    except Exception as e:
-       #do some error handling stuff... @todo
-        print(e)
+            return redirect('/teacher/')
+        else:
+            return render(request, 'teacher_create_assignment.html', context)
+
     return render(request, 'teacher_create_assignment.html', context)
     
