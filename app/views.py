@@ -123,8 +123,13 @@ def teacher_view(request):
     for i in _teacher_assignments_:
         teacher_assignments.append({
             "name": i.assignment_name,
+            "assignment_description": i.assignment_description,
+            "input_description": i.input_description,
+            "output_description": i.output_description,
+            "limit_description": i.limit_description,
             "class_name": i.school_class.class_name,
-            "class_code": i.school_class.class_code
+            "class_code": i.school_class.class_code,
+            "due_date": str(i.due_date)
         })
 
     context['teacher_assignments'] = json.dumps(teacher_assignments)
@@ -145,7 +150,6 @@ def teacher_create_class(request):
                                     teacher = teacher)
             new_class.save()
             return redirect('/teacher')
-
         except Exception as e:
             print(e)
     
