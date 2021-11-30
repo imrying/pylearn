@@ -1,0 +1,6 @@
+curl -XPOST -u 'mitkoerekort.dk_CVR_I_SKYEN:705f39a2-83d4-4a56-8b17-50d451d0afb9' –H 'Content-Type: application/json' 
+http://distribution.virk.dk/cvr-permanent/virksomhed/_search -d ' 
+{ 
+  "_source":["Vrvirksomhed.virksomhedMetadata.nyesteNavn.navn"], 
+  "query":{"term":{"Vrvirksomhed.cvrNummer":"30714024"}} 
+}' | python -mjson.tool
