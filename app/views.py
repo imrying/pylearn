@@ -62,6 +62,7 @@ def register(request):
             log_user_in(request, username)
 
             new_user = db_table(email=email, username=username, password_hash=hashed_password)
+            
             new_user.save()
 
             if usertype == 'teacher':
@@ -159,6 +160,19 @@ def student_view(request):
     if username != None:
         return HttpResponse(username)
     return redirect('/login')
+
+def student_join_class(request):
+    if request.method == 'POST':
+        username = request.session.get('username')
+        student = next((x for x in Student.objects.all() if x.username == username), None)
+        newclass = next((x for x in SchoolClass.objects.all() if x.class_code == request.POST.get('class_code')), None)
+
+        if (newclass == None):
+            pass #lav error handling
+        else:
+            newclass.students.add(student)
+            return redirect('/student')
+    return render(request, 'student_join_class.html')
 
 def front_page(request):
     

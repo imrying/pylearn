@@ -20,7 +20,7 @@ class SchoolClass(models.Model):
     class_description = models.CharField(max_length=200)
     class_code = models.CharField(max_length=6, unique=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    students = models.ManyToManyField(Student, blank=True)
+    students = models.ManyToManyField(Student,blank=True)
 
 class Answer(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
