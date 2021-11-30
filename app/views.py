@@ -6,6 +6,7 @@ import random
 import string
 import json
 import re
+from django.core.files.storage import FileSystemStorage
 
 from .models import *
 
@@ -121,13 +122,15 @@ def teacher_view(request):
     _teacher_assignments_ = filter(lambda x: x.school_class.teacher.username == username, Assignment.objects.all())
     teacher_assignments = []
     for i in _teacher_assignments_:
-        print('-'*50)
-        print(dir(i))
-        print('-'*50)
         teacher_assignments.append({
             "name": i.assignment_name,
+            "assignment_description": i.assignment_description,
+            "input_description": i.input_description,
+            "output_description": i.output_description,
+            "limit_description": i.limit_description,
             "class_name": i.school_class.class_name,
-            "class_code": i.school_class.class_code
+            "class_code": i.school_class.class_code,
+            "due_date": str(i.due_date)
         })
 
     context['teacher_assignments'] = json.dumps(teacher_assignments)
@@ -148,7 +151,6 @@ def teacher_create_class(request):
                                     teacher = teacher)
             new_class.save()
             return redirect('/teacher')
-
         except Exception as e:
             print(e)
     
@@ -203,5 +205,51 @@ def front_page(request):
     return render(request, 'front_page.html', context)
 
 def teacher_create_assignment(request):
-    return render(request, 'teacher_create_assignment.html')
+    username = request.session.get("username")
+    context = {'username': username}
+
+    if username == None:
+        return redirect('/')
+    
+    try: 
+        teacher_classes = filter(lambda x: x.teacher.username == username, SchoolClass.objects.all())
+        context['teacher_classes'] = teacher_classes
+    except Exception as e:
+        print(e)
+    try:
+        if request.method == 'POST' and request.FILES['input_file'] and request.FILES['output_file']:
+        
+            name = request.POST.get('name')
+            assignment_description = request.POST.get('assignment_description')
+            input_description = request.POST.get('input_description')
+            output_description = request.POST.get('output_description')
+            limit_description = request.POST.get('limit_description')
+            class_code = request.POST.get('class_name')
+            due_date = request.POST.get('date')
+            input_file = request.FILES.get('input_file')
+            output_file = request.FILES.get('output_file')
+            fs = FileSystemStorage()
+            input_name = "input" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + input_file.name
+            output_name = "output" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + input_file.name
+            fs.save(input_name, input_file)
+            fs.save(output_name, output_file)
+            test_case = TestCase(input=input_name, output=output_name)
+            test_case.save()
+            test = Test(test_case=test_case)
+            test.save()
+            school_class = SchoolClass.objects.get(class_code=class_code)
+            assignment = Assignment(assignment_name = name, 
+                                    assignment_description=assignment_description, 
+                                    input_description=input_description,
+                                    output_description=output_description,
+                                    limit_description=limit_description,
+                                    due_date=due_date,
+                                    school_class = school_class,
+                                    test = test
+                                    )
+            assignment.save()
+    except Exception as e:
+       #do some error handling stuff... @todo
+        print(e)
+    return render(request, 'teacher_create_assignment.html', context)
     

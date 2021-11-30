@@ -15,12 +15,13 @@
   <div class="text-center mb-4">
     <h1>Opret Opgave</h1>
   </div>
-
+    <form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
     <div class="row">
       <div class="col">
         <div class="mb-3">
-            <label for="title" class="form-label">Titel</label>
-            <input name="title" type="title" class="form-control" id="title" aria-describedby="emailHelp" value="{{ title }}">
+            <label for="name" class="form-label">Titel</label>
+            <input name="name" class="form-control" id="name" value="{{ name }}">
         </div>
 
         <div class="mb-3">
@@ -49,11 +50,11 @@
       </div>
       <div class="col">
         <div class="mb-2">
-          <label for="cars"> Klasse: </label> <br>  
-            <select id="classes" onchange="updateClassCode()">
+          <label for="class" class-"form-label"> Klasse: </label> <br>  
+            <select id="classes" name="class_name" onchange="updateClassCode()">
               <option value="" selected = "selected" class="form-control">Vælg klasse</option>
               {% for i in teacher_classes %}
-                <option value="{{i.class_code}}" class="form-control">{{i.class_name}}</option>
+                <option value="{{i.class_code}}" class="form-control">{{i.class_name}}  </option>
               {% endfor %}
             </select>
         </div>
@@ -75,15 +76,18 @@
 
       </div>
     </div>
-    <div class="row">
         <div class="text-center"> 
             <button type="submit" class="btn btn-primary">Submit</button>
         </div>
          <div class="text-center mt-3"> <a href="/teacher"> Take me back </a> </div>
-    </div>
-    
+    </form>
   </div>
 </div>
+
+  {% if uploaded_file_url %}
+    <p>File uploaded at: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></p>
+  {% endif %}
+  
 </body>
 
 </html>
