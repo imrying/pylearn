@@ -179,10 +179,41 @@ def teacher_create_class(request):
             
  
 def student_view(request):
+    username = request.session.get("username")
+    context = {'username': username}
+
+    if username == None:
+        return redirect('/')
+    
     username = request.session.get('username')
-    if username != None:
-        return HttpResponse(username)
-    return redirect('/login')
+    student = Student.objects.get(username=username)
+
+    # Find alle elevens klasser
+    #student_classes = list(filter(lambda x: x.students.username == username, SchoolClass.objects.all()))
+    student_classes = student.schoolclass_set.all()
+    
+    context['student_classes'] = student_classes
+
+
+    assignments = []
+    for school_class in student_classes:
+        assignments += school_class.assignments.all()
+
+    student_assignments = []
+    for i in assignments:
+        student_assignments.append({
+            "name": i.assignment_name,
+            "assignment_description": i.assignment_description,
+            "input_description": i.input_description,
+            "output_description": i.output_description,
+            "limit_description": i.limit_description,
+            "class_name": i.schoolclass_set.all()[0].class_name,
+            "class_code": i.schoolclass_set.all()[0].class_code,
+            "due_date": str(i.due_date)
+        })
+
+    context['student_assignments'] = json.dumps(student_assignments)
+    return render(request, 'student.html', context)
 
 def student_join_class(request):
     if request.method == 'POST':
