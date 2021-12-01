@@ -117,9 +117,18 @@ def teacher_view(request):
     # Find alle lærenes klasser
     teacher_classes = filter(lambda x: x.teacher.username == username, SchoolClass.objects.all())
     context['teacher_classes'] = teacher_classes
+    
 
     # Find alle lærenes opgaver
-    _teacher_assignments_ = filter(lambda x: x.school_class.teacher.username == username, Assignment.objects.all())
+    list_of_list_of_assigments = []
+    for schoolclass in teacher_classes:
+        list_of_list_of_assigments.append(schoolclass.assignments.all())
+
+    _teacher_assignments_ = [assignment for assignmentlist in list_of_list_of_assigments for assignment in assignmentlist]
+    # print(list_of_list_of_assigments[1][0].assignment_name)
+
+    # _teacher_assignments_ = filter(lambda x: x.school_class.teacher.username == username, Assignment.objects.all())
+    # _teacher_assignments_ = []
     teacher_assignments = []
     for i in _teacher_assignments_:
         teacher_assignments.append({
@@ -128,8 +137,8 @@ def teacher_view(request):
             "input_description": i.input_description,
             "output_description": i.output_description,
             "limit_description": i.limit_description,
-            "class_name": i.school_class.class_name,
-            "class_code": i.school_class.class_code,
+            # "class_name": i.school_class.class_name,
+            # "class_code": i.school_class.class_code,
             "due_date": str(i.due_date)
         })
 
@@ -303,10 +312,11 @@ def teacher_create_assignment(request):
                                     output_description=output_description,
                                     limit_description=limit_description,
                                     due_date=due_date,
-                                    school_class = school_class,
                                     test = test
                                     )
             assignment.save()
+            school_class.assignments.add(assignment)
+            school_class.save()
             return redirect('/teacher/')
         else:
             return render(request, 'teacher_create_assignment.html', context)

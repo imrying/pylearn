@@ -15,13 +15,6 @@ class Teacher(models.Model):
     username = models.CharField(max_length=200, unique=True)
     password_hash = models.CharField(max_length=200)
 
-class SchoolClass(models.Model):
-    class_name = models.CharField(max_length=200, unique=True)
-    class_description = models.CharField(max_length=200)
-    class_code = models.CharField(max_length=6, unique=True)
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    students = models.ManyToManyField(Student,blank=True)
-
 class Answer(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     code = models.FileField()
@@ -44,6 +37,14 @@ class Assignment(models.Model):
     limit_description = models.CharField(max_length=200)
     due_date = models.DateField()
     assignment_answers = models.ManyToManyField(Answer, blank=True)
-    school_class = models.ForeignKey(SchoolClass, on_delete=models.CASCADE)
+    #school_class = models.ForeignKey(SchoolClass, on_delete=models.CASCADE)
     test = models.ForeignKey(Test,on_delete=models.CASCADE) 
+
+class SchoolClass(models.Model):
+    class_name = models.CharField(max_length=200, unique=True)
+    class_description = models.CharField(max_length=200)
+    class_code = models.CharField(max_length=6, unique=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    students = models.ManyToManyField(Student,blank=True)
+    assignments = models.ManyToManyField(Assignment, blank = True)
 
