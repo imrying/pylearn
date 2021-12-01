@@ -100,7 +100,7 @@
         for (var i = 0; i < g.length; i++) {
           var obj = g[i];
           if (obj.class_code == class_code) {
-            htmlcode += "<div class='mb-2'> <button class='btn btn-primary' onclick='selectAssignment(\"" + encodeURIComponent(JSON.stringify(obj)) + "\")'>" + obj.name+"</button><br>Afleveringsfrist: " + obj.due_date + "</div>";
+            htmlcode += "<div class='mb-2'> <button class='btn btn-secondary' onclick='selectAssignment(\"" + encodeURIComponent(JSON.stringify(obj)) + "\")'>" + obj.name+"</button><br> czx<Afleveringsfrist: " + obj.due_date + "</div>";
           }
         }
         document.getElementById('shown_assignments').innerHTML = htmlcode;

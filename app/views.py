@@ -349,4 +349,66 @@ def teacher_create_assignment(request):
             return render(request, 'teacher_create_assignment.html', context)
 
     return render(request, 'teacher_create_assignment.html', context)
+
+
+def submission_view(request, assignment_id):
+    context = {}
+    try:
+        username = request.session.get("username")
+        student = Student.objects.get(username = username)
+        assignment = Assignment.objects.get(id=assignment_id)
+
+        school_class_students = assignment.schoolclass_set.all()[0].students.all()
+        print(school_class_students)
+        
+        student_found = False
+        for student in school_class_students:
+            if student.username == username:
+                student_found = True
+                break
+        if not student_found:
+            raise ValueError()
+    except Exception as e:
+        print(e)
+        return redirect('/student/')
     
+    if request.method == 'POST':
+        submit_file = request.FILES.get('submit_file')
+        if not submit_file:
+            context['error'] = "Fejl i upload, prøv igen"
+            pass
+        fs = FileSystemStorage()
+        submission_name = "submission" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + submit_file.name
+        fs.save(submission_name, submit_file)
+        
+        
+            submission = list(filter(student == student, assignment.assignment_answers.all()))
+            print("submission:", submission)
+            if len(submission) == 0:
+                raise ValueError("lololol")
+            fs.delete(submission[0].code)
+            submission[0].update(code = submission_name)
+        try:
+            pass
+        except Exception as e:
+            print(e)
+            submission = Answer(student = student, code = submission_name)
+            submission.save()
+       
+    context['assignment'] = assignment
+    return render(request, 'submission.html', context)
+
+
+# def single_class_view(request, assignment_id):
+#     context = {}
+#     try:
+#         school_class = SchoolClass.objects.get(class_code = code)
+#         assignment = Assignment.objects.get(id=assignment_id)
+#     except Exception as e:
+#         print(e)
+
+#     context['school_class'] = school_class
+#     context['students'] = school_class.students.all()
+#     context['assignment'] = assignment
+
+#     return render(request, 'single_class.html', context)

@@ -17,10 +17,8 @@ class Teacher(models.Model):
 
 class Answer(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    code = models.FileField()
+    code = models.CharField(max_length=256)
     results = models.CharField(max_length=1024, blank=True)
-
-
 
 class TestCase(models.Model):
     input = CharField(max_length=200)

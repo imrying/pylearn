@@ -9,6 +9,7 @@ admin.site.register(SchoolClass)
 admin.site.register(Assignment)
 admin.site.register(Test)
 admin.site.register(TestCase)
+admin.site.register(Answer)
 
 
 
