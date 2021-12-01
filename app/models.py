@@ -37,7 +37,6 @@ class Assignment(models.Model):
     limit_description = models.CharField(max_length=200)
     due_date = models.DateField()
     assignment_answers = models.ManyToManyField(Answer, blank=True)
-    #school_class = models.ForeignKey(SchoolClass, on_delete=models.CASCADE)
     test = models.ForeignKey(Test,on_delete=models.CASCADE) 
 
 class SchoolClass(models.Model):
