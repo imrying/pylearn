@@ -358,9 +358,7 @@ def submission_view(request, assignment_id):
         student = Student.objects.get(username = username)
         assignment = Assignment.objects.get(id=assignment_id)
 
-        school_class_students = assignment.schoolclass_set.all()[0].students.all()
-        print(school_class_students)
-        
+        school_class_students = assignment.schoolclass_set.all()[0].students.all()        
         student_found = False
         for student in school_class_students:
             if student.username == username:
@@ -381,18 +379,24 @@ def submission_view(request, assignment_id):
         submission_name = "submission" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + submit_file.name
         fs.save(submission_name, submit_file)
         
-        
-            submission = list(filter(student == student, assignment.assignment_answers.all()))
-            print("submission:", submission)
+        try: 
+            assignment_answers = assignment.assignment_answers.all()
+            submission = []
+            for answer in assignment_answers:
+                if answer.student == student:
+                    submission.append(answer) 
             if len(submission) == 0:
-                raise ValueError("lololol")
+                raise ValueError("submission not found creating new")
+            print("submission already exists deleting previous")
+            print(submission[0].code)
             fs.delete(submission[0].code)
-            submission[0].update(code = submission_name)
-        try:
-            pass
+            submission[0].code = submission_name
+            submission[0].save()
         except Exception as e:
             print(e)
             submission = Answer(student = student, code = submission_name)
+            submission.save()
+            assignment.assignment_answers.add(submission)
             submission.save()
        
     context['assignment'] = assignment
