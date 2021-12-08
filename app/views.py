@@ -204,6 +204,7 @@ def student_view(request):
         student_assignments.append({
             "name": i.assignment_name,
             "assignment_description": i.assignment_description,
+            "assignment_id": i.id,
             "input_description": i.input_description,
             "output_description": i.output_description,
             "limit_description": i.limit_description,
