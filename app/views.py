@@ -136,7 +136,8 @@ def teacher_view(request):
             "limit_description": i.limit_description,
             "class_name": i.schoolclass_set.all()[0].class_name,
             "class_code": i.schoolclass_set.all()[0].class_code,
-            "due_date": str(i.due_date)
+            "due_date": str(i.due_date),
+            "assignment_id": i.id
         })
 
     context['teacher_assignments'] = json.dumps(teacher_assignments)
@@ -199,6 +200,8 @@ def student_view(request):
     assignments = []
     for school_class in student_classes:
         assignments += school_class.assignments.all()
+    
+
 
     student_assignments = []
     for i in assignments:
@@ -213,6 +216,7 @@ def student_view(request):
             "class_code": i.schoolclass_set.all()[0].class_code,
             "due_date": str(i.due_date)
         })
+
 
     context['student_assignments'] = json.dumps(student_assignments)
     return render(request, 'student.html', context)
