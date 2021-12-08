@@ -1,0 +1,40 @@
+Traceback (most recent call last):
+  File "/Users/benjaminhilton/gradertester/addition.py", line 6, in <module>
+    a[1] = 1
+IndexError: list assignment index out of range
+Traceback (most recent call last):
+  File "/Users/benjaminhilton/gradertester/addition.py", line 6, in <module>
+    a[1] = 1
+IndexError: list assignment index out of range
+Traceback (most recent call last):
+  File "/Users/benjaminhilton/gradertester/addition.py", line 6, in <module>
+    a[1] = 1
+IndexError: list assignment index out of range
+Traceback (most recent call last):
+  File "/Users/benjaminhilton/gradertester/addition.py", line 6, in <module>
+    a[1] = 1
+IndexError: list assignment index out of range
+Traceback (most recent call last):
+  File "/Users/benjaminhilton/gradertester/addition.py", line 6, in <module>
+    a[1] = 1
+IndexError: list assignment index out of range
+Traceback (most recent call last):
+  File "/Users/benjaminhilton/gradertester/addition.py", line 6, in <module>
+    a[1] = 1
+IndexError: list assignment index out of range
+Traceback (most recent call last):
+  File "/Users/benjaminhilton/gradertester/addition.py", line 6, in <module>
+    a[1] = 1
+IndexError: list assignment index out of range
+Traceback (most recent call last):
+  File "/Users/benjaminhilton/gradertester/addition.py", line 6, in <module>
+    a[1] = 1
+IndexError: list assignment index out of range
+Traceback (most recent call last):
+  File "/Users/benjaminhilton/gradertester/addition.py", line 6, in <module>
+    a[1] = 1
+IndexError: list assignment index out of range
+Traceback (most recent call last):
+  File "/Users/benjaminhilton/gradertester/addition.py", line 6, in <module>
+    a[1] = 1
+IndexError: list assignment index out of range
