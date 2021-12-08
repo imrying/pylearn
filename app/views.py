@@ -1,12 +1,17 @@
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
+from django.conf import settings
+from django.http import Http404
 import hashlib
 import random
 import string
+import os
 import json
 import re
 from django.core.files.storage import FileSystemStorage
+import datetime
+
 
 from .models import *
 
@@ -115,11 +120,16 @@ def teacher_view(request):
     username = request.session.get('username')
 
     # Find alle lærenes klasser
-    teacher_classes = filter(lambda x: x.teacher.username == username, SchoolClass.objects.all())
+    teacher_classes = list(filter(lambda x: x.teacher.username == username, SchoolClass.objects.all()))
     context['teacher_classes'] = teacher_classes
 
     # Find alle lærenes opgaver
-    _teacher_assignments_ = filter(lambda x: x.school_class.teacher.username == username, Assignment.objects.all())
+    list_of_list_of_assigments = []
+    for schoolclass in teacher_classes:
+        list_of_list_of_assigments.append(schoolclass.assignments.all())
+
+    _teacher_assignments_ = [assignment for assignmentlist in list_of_list_of_assigments for assignment in assignmentlist]
+
     teacher_assignments = []
     for i in _teacher_assignments_:
         teacher_assignments.append({
@@ -128,9 +138,10 @@ def teacher_view(request):
             "input_description": i.input_description,
             "output_description": i.output_description,
             "limit_description": i.limit_description,
-            "class_name": i.school_class.class_name,
-            "class_code": i.school_class.class_code,
-            "due_date": str(i.due_date)
+            "class_name": i.schoolclass_set.all()[0].class_name,
+            "class_code": i.schoolclass_set.all()[0].class_code,
+            "due_date": str(i.due_date),
+            "assignment_id": i.id
         })
 
     context['teacher_assignments'] = json.dumps(teacher_assignments)
@@ -138,30 +149,81 @@ def teacher_view(request):
 
 def teacher_create_class(request):
     if request.method == 'POST':
+        context = {
+            'error_messages': []
+        }
         class_name = request.POST.get('class_name')
+        if class_name: 
+            context['class_name']= class_name
+
         class_description = request.POST.get('class_description')
-        print(class_name)
-        print(class_description)
+        if class_description: 
+            context['class_description']= class_description
+
         teacher = Teacher.objects.get(username=request.session.get('username'))
 
-        try:
-            new_class = SchoolClass(class_name = class_name, 
-                                    class_description = class_description, 
-                                    class_code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)), 
-                                    teacher = teacher)
-            new_class.save()
-            return redirect('/teacher')
-        except Exception as e:
-            print(e)
+
+        if len(class_name) < 1:
+            context['error_messages'].append('Indtast venligst et navn')
+        if len(class_description) < 50:
+            context['error_messages'].append('Beskrivelsen skal min. indeholde 50 tegn')
+
+        if len(context['error_messages']) == 0:
+            try:
+                new_class = SchoolClass(class_name = class_name, 
+                                        class_description = class_description, 
+                                        class_code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)), 
+                                        teacher = teacher)
+                new_class.save()
+                return redirect('/teacher')
+            except Exception as e:
+                print(e)
+        else:
+            return render(request, 'teacher_create_class.html', context)
     
     return render(request, 'teacher_create_class.html')
             
  
 def student_view(request):
+    username = request.session.get("username")
+    context = {'username': username}
+
+    if username == None:
+        return redirect('/')
+    
     username = request.session.get('username')
-    if username != None:
-        return HttpResponse(username)
-    return redirect('/login')
+    student = Student.objects.get(username=username)
+
+    # Find alle elevens klasser
+    #student_classes = list(filter(lambda x: x.students.username == username, SchoolClass.objects.all()))
+    student_classes = student.schoolclass_set.all()
+    
+    context['student_classes'] = student_classes
+
+
+    assignments = []
+    for school_class in student_classes:
+        assignments += school_class.assignments.all()
+    
+
+
+    student_assignments = []
+    for i in assignments:
+        student_assignments.append({
+            "name": i.assignment_name,
+            "assignment_description": i.assignment_description,
+            "assignment_id": i.id,
+            "input_description": i.input_description,
+            "output_description": i.output_description,
+            "limit_description": i.limit_description,
+            "class_name": i.schoolclass_set.all()[0].class_name,
+            "class_code": i.schoolclass_set.all()[0].class_code,
+            "due_date": str(i.due_date)
+        })
+
+
+    context['student_assignments'] = json.dumps(student_assignments)
+    return render(request, 'student.html', context)
 
 def student_join_class(request):
     if request.method == 'POST':
@@ -206,7 +268,7 @@ def front_page(request):
 
 def teacher_create_assignment(request):
     username = request.session.get("username")
-    context = {'username': username}
+    context = {'username': username, 'error_messages': []}
 
     if username == None:
         return redirect('/')
@@ -216,18 +278,53 @@ def teacher_create_assignment(request):
         context['teacher_classes'] = teacher_classes
     except Exception as e:
         print(e)
-    try:
-        if request.method == 'POST' and request.FILES['input_file'] and request.FILES['output_file']:
-        
-            name = request.POST.get('name')
-            assignment_description = request.POST.get('assignment_description')
-            input_description = request.POST.get('input_description')
-            output_description = request.POST.get('output_description')
-            limit_description = request.POST.get('limit_description')
-            class_code = request.POST.get('class_name')
-            due_date = request.POST.get('date')
-            input_file = request.FILES.get('input_file')
-            output_file = request.FILES.get('output_file')
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        if name:
+            context['name'] = name
+        assignment_description = request.POST.get('assignment_description')
+        if assignment_description:
+            context['assignment_description'] = assignment_description
+        input_description = request.POST.get('input_description')
+        if input_description:
+            context['input_description'] = input_description
+        output_description = request.POST.get('output_description')
+        if output_description:
+            context['output_description'] = output_description
+        limit_description = request.POST.get('limit_description')
+        if limit_description:
+            context['limit_description'] = limit_description
+        class_code = request.POST.get('class_name')
+        if class_code:
+            context['class_code'] = class_code
+        due_date = request.POST.get('date')
+        if due_date:
+            context['due_date'] = due_date
+        input_file = request.FILES.get('input_file') 
+        output_file = request.FILES.get('output_file')
+
+        # Check for errors
+        if len(name) < 1:
+            context['error_messages'].append('Venligst angiv et navn til opgaven')
+        if len(assignment_description) < 50:
+            context['error_messages'].append('Opgave beskrivelsen skal min. indeholde 50 tegn')
+        if len(input_description) < 50:
+            context['error_messages'].append('Input beskrivelsen skal min. indeholde 50 tegn')
+        if len(output_description) < 50:
+            context['error_messages'].append('Output beskrivelsen skal min. indeholde 50 tegn')
+        if len(limit_description) < 50:
+            context['error_messages'].append('Begrænsnings beskrivelsen skal min. indeholde 50 tegn')
+        if not class_code:
+            context['error_messages'].append('Angiv venligst en klasse')
+        if not due_date:
+            context['error_messages'].append('Venligst angiv en Afleveringsfrist')
+        if not input_file:
+            context['error_messages'].append('Venligst upload en input fil')
+        if not output_file:
+            context['error_messages'].append('Venligst upload en output fil')        
+
+        if len(context['error_messages']) == 0:
             fs = FileSystemStorage()
             input_name = "input" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + input_file.name
             output_name = "output" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + input_file.name
@@ -237,19 +334,130 @@ def teacher_create_assignment(request):
             test_case.save()
             test = Test(test_case=test_case)
             test.save()
-            school_class = SchoolClass.objects.get(class_code=class_code)
+            print(')============================(')
+            print('FAILING AT School class')
+            try:
+                school_class = SchoolClass.objects.get(class_code=class_code)
+            except: 
+                # Couldnt find school class
+                pass
+            print(')============================(')
+            print('FAILING AT ASSIGN')
             assignment = Assignment(assignment_name = name, 
                                     assignment_description=assignment_description, 
                                     input_description=input_description,
                                     output_description=output_description,
                                     limit_description=limit_description,
                                     due_date=due_date,
-                                    school_class = school_class,
                                     test = test
                                     )
             assignment.save()
-    except Exception as e:
-       #do some error handling stuff... @todo
-        print(e)
+            school_class.assignments.add(assignment)
+            school_class.save()
+            return redirect('/teacher/')
+        else:
+            return render(request, 'teacher_create_assignment.html', context)
+
     return render(request, 'teacher_create_assignment.html', context)
+
+
+def submission_view(request, assignment_id):
+    context = {
+        'error_messages': []
+    }
+
+
+    try:
+        username = request.session.get("username")
+        student = Student.objects.get(username = username)
+        assignment = Assignment.objects.get(id=assignment_id)
+
+        school_class_students = assignment.schoolclass_set.all()[0].students.all()        
+        student_found = False
+        for student in school_class_students:
+            if student.username == username:
+                student_found = True
+                break
+        if not student_found:
+            raise ValueError()
+        
+    except Exception as e:
+        print(e)
+        return redirect('/student/')
+
     
+    if request.method == 'POST':
+        if assignment.due_date < datetime.date.today():
+            context['error_messages'].append('Aflveringsfristen er opnået, du kan ikke aflevere mere')
+            return render(request, 'submission.html', context)
+
+
+        submit_file = request.FILES.get('submit_file')
+        if not submit_file:
+            context['error'] = "Fejl i upload, prøv igen"
+            pass
+        fs = FileSystemStorage()
+        submission_name = "submission" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + submit_file.name
+        fs.save(submission_name, submit_file)
+        try: 
+            assignment_answers = assignment.assignment_answers.all()
+            submission = []
+            for answer in assignment_answers:
+                if answer.student == student:
+                    submission.append(answer) 
+            if len(submission) == 0:
+                raise ValueError("submission not found creating new")
+            print("submission already exists deleting previous")
+            print(submission[0].code)
+            fs.delete(submission[0].code)
+            submission[0].code = submission_name
+            submission[0].save()
+        except ValueError as e:
+            print(e)
+            submission = Answer(student = student, code = submission_name)
+            submission.save()
+            assignment.assignment_answers.add(submission)
+            submission.save()
+       
+    context['assignment'] = assignment
+    return render(request, 'submission.html', context)
+
+
+def single_class_view(request, assignment_id):
+    context = {}
+    try:
+        assignment = Assignment.objects.get(id=assignment_id)
+        code = assignment.schoolclass_set.all()[0].class_code
+        school_class = SchoolClass.objects.get(class_code = code)
+    except Exception as e:
+        print(e)
+
+    context['school_class'] = school_class
+    context['students'] = school_class.students.all()
+    context['assignment'] = assignment
+
+    _assignment_answers_ = assignment.assignment_answers.all()
+    print(_assignment_answers_)
+
+    assignment_answers = []
+
+    for i in _assignment_answers_:
+        assignment_answers.append({
+            "username": i.student.username,
+            "code": i.code,
+            "results": i.results
+        })
+    context['assignment_answers'] = json.dumps(assignment_answers)
+    
+    return render(request, 'single_class.html', context)
+
+
+def download(request, path):
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    print(file_path)
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            return response
+    raise Http404

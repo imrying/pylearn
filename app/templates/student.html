@@ -19,12 +19,12 @@
 
     <div class="container-lg mt-5 mb-5">
       <div class="row align-items-start">
-          <div class="col-4">
+          <div class="col-3">
             <div class="bg-white shadow px-4 py-4">
               <div class="row">
 
                 
-                <div class="col-6">
+                <div class="col-12">
 
                   <div class="mb-4">
                   <label for="cars"> <span> <h3> Klasse </h3> </span>  </label>
@@ -32,23 +32,22 @@
                     
                     <select class="form-select bg-primary" id="classes" onchange="updateClassCode()">
                       <option value="" selected = "selected"> Vælg klasse </option>
-                      {% for i in teacher_classes %}
+                      {% for i in student_classes %}
                         <option value="{{i.class_code}}">{{i.class_name}}</option>
                       {% endfor %}
                     </select>
                     <br>
-                    <a href="/teacher/createclass">Opret ny klasse</a>
+                    <a href="/student/joinclass">Tilmeld Klasse</a>
                   
                   </div>
 
-                  <div class="col-6">
-                    <h5> Kode: </h5> <p id="shown_class_code"></p>
+                  <div class="col-6" style="display:none">
+                    <p id="shown_class_code"></p>
                     </div>
                   </div>
 
           
               <h3 class="mt-4">Opgaver </h3>
-              <a class='width-100' href="/teacher/createassignment">Lav opgave</a>
 
               <!-- Opgaver -->
               <div class="mt-3 row" id="shown_assignments">
@@ -60,7 +59,8 @@
 
           <!-- Detaljeret beskrivelse af opgaven -->
           <div class="col-8">
-            <div id="assignment_description">
+              <div id="assignment_description">
+
               <!-- Change with javascript -->
             </div>
 
@@ -75,11 +75,11 @@
         obj = JSON.parse(decodeURIComponent(obj));
         console.log(obj);
         let html = `<h4>${obj.name} ${obj.class_name}</h4>`;
-        html += `<a href="${obj.assignment_id}"> Se besvarelser </a>`
+        html += `<a href="submit/${obj.assignment_id}"> Aflever besvarelse </a>`
         html += `<h5> Beskrivelse</h5>`;
-        html += `<p style="width:65%">${obj.assignment_description}</p>`;
+        html += `<div class="text-wrap"><p>${obj.assignment_description}</p> </div>`;
         html += `<h5> Input</h5>`;
-        html += `<p style="width:65%">${obj.input_description}</p>`;
+        html += `<p>${obj.input_description}</p>`;
         html += `<h5> Outputs</h5>`;
         html += `<p style="width:65%">${obj.output_description}</p>`;
         html += `<h5> Begrænsninger</h5>`;
@@ -95,13 +95,13 @@
         var class_code = document.getElementById("classes").value;
         document.getElementById('shown_class_code').innerHTML = class_code;
 
-        var g = "{{ teacher_assignments|escapejs }}";
+        var g = "{{ student_assignments|escapejs }}";
         g = JSON.parse(g);
         var htmlcode = "";
         for (var i = 0; i < g.length; i++) {
           var obj = g[i];
           if (obj.class_code == class_code) {
-            htmlcode += "<div class='mb-2'><button class='btn btn-secondary' onclick='selectAssignment(\"" + encodeURIComponent(JSON.stringify(obj)) + "\")'>" + obj.name+"</button> <br> Afleveringsfrist: " + obj.due_date + "</div>";
+            htmlcode += "<div class='mb-2'> <button class='btn btn-secondary' onclick='selectAssignment(\"" + encodeURIComponent(JSON.stringify(obj)) + "\")'>" + obj.name+"</button><br> czx<Afleveringsfrist: " + obj.due_date + "</div>";
           }
         }
         document.getElementById('shown_assignments').innerHTML = htmlcode;
