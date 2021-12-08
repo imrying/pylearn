@@ -1,13 +1,17 @@
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
+from django.conf import settings
+from django.http import Http404
 import hashlib
 import random
 import string
+import os
 import json
 import re
 from django.core.files.storage import FileSystemStorage
 import datetime
+
 
 from .models import *
 
@@ -432,4 +436,28 @@ def single_class_view(request, assignment_id):
     context['students'] = school_class.students.all()
     context['assignment'] = assignment
 
+    _assignment_answers_ = assignment.assignment_answers.all()
+    print(_assignment_answers_)
+
+    assignment_answers = []
+
+    for i in _assignment_answers_:
+        assignment_answers.append({
+            "username": i.student.username,
+            "code": i.code,
+            "results": i.results
+        })
+    context['assignment_answers'] = json.dumps(assignment_answers)
+    
     return render(request, 'single_class.html', context)
+
+
+def download(request, path):
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    print(file_path)
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            return response
+    raise Http404

@@ -23,17 +23,47 @@
                     <div class="mb-4">
                     <label for="cars"> <span> <h3> Elever </h3> </span>  </label>
                     </div>                      
-                        {% for student in students %}
-                          <button class="btn btn-secondary m-1">{{student.username}}</button>
-                        {% endfor %}
-                        <br>
+                        <select class="form-select bg-primary" id="students" onchange="showStudentAssignment()">
+                          <option value="" selected = "selected"> Vælg klasse </option>
+                          {% for student in students %}
+                            <option value="{{student.username}}">{{student.username}}</option>
+                          {% endfor %}
+                        </select>
                     </div>
-                </div>  
+
+                </div>
+
+
             </div>
   
             </div>
+            <div class="col-8">
+              <div id="shown_answer">
+                <!-- Change with javascript -->
+              </div>
+  
+            </div>  
         </div>
       </div>
+
+      <script>
+        function showStudentAssignment() {
+          var student_username = document.getElementById("students").value;
+          console.log(student_username);
+  
+          var g = "{{ assignment_answers|escapejs }}";
+          g = JSON.parse(g);
+          var htmlcode = "";
+          for (var i = 0; i < g.length; i++) {
+            var obj = g[i];
+            if (obj.username == student_username) {
+              htmlcode += `<a href="/download/${obj.code}" > Download besvarelse <a>`;
+            }
+          }
+          document.getElementById('shown_answer').innerHTML = htmlcode;
+        }
+          
+      </script>
 
 
     </body>
