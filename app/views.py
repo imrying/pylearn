@@ -7,6 +7,7 @@ import string
 import json
 import re
 from django.core.files.storage import FileSystemStorage
+import datetime
 
 from .models import *
 
@@ -353,7 +354,11 @@ def teacher_create_assignment(request):
 
 
 def submission_view(request, assignment_id):
-    context = {}
+    context = {
+        'error_messages': []
+    }
+
+
     try:
         username = request.session.get("username")
         student = Student.objects.get(username = username)
@@ -367,11 +372,18 @@ def submission_view(request, assignment_id):
                 break
         if not student_found:
             raise ValueError()
+        
     except Exception as e:
         print(e)
         return redirect('/student/')
+
     
     if request.method == 'POST':
+        if assignment.due_date < datetime.date.today():
+            context['error_messages'].append('Aflveringsfristen er opnået, du kan ikke aflevere mere')
+            return render(request, 'submission.html', context)
+
+
         submit_file = request.FILES.get('submit_file')
         if not submit_file:
             context['error'] = "Fejl i upload, prøv igen"
@@ -379,7 +391,6 @@ def submission_view(request, assignment_id):
         fs = FileSystemStorage()
         submission_name = "submission" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + submit_file.name
         fs.save(submission_name, submit_file)
-        
         try: 
             assignment_answers = assignment.assignment_answers.all()
             submission = []
@@ -393,7 +404,7 @@ def submission_view(request, assignment_id):
             fs.delete(submission[0].code)
             submission[0].code = submission_name
             submission[0].save()
-        except Exception as e:
+        except ValueError as e:
             print(e)
             submission = Answer(student = student, code = submission_name)
             submission.save()

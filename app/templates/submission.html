@@ -30,6 +30,10 @@
                             <div class="text-center"> 
                                 <button type="submit" class="btn btn-primary">Submit</button>
                             </div>
+                            <br>
+                            {% for em in error_messages %}
+                            <p class="text-danger">{{em}}</p>
+                            {% endfor %}
                         </div>
 
                       </div>
