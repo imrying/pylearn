@@ -11,7 +11,7 @@ urlpatterns = [
     path('teacher/createassignment', views.teacher_create_assignment, name='teacher_create_assignment'),
     path('student/', views.student_view, name='student_view'),
     path('', views.front_page, name='front_page_view'),
-    #path('teacher/<int:assignment_id>', views.single_class_view, name='single_class'),
+    path('teacher/<int:assignment_id>', views.single_class_view, name='single_class'),
     path('student/submit/<int:assignment_id>', views.submission_view, name="submission_view")
 
 ]

@@ -415,16 +415,17 @@ def submission_view(request, assignment_id):
     return render(request, 'submission.html', context)
 
 
-# def single_class_view(request, assignment_id):
-#     context = {}
-#     try:
-#         school_class = SchoolClass.objects.get(class_code = code)
-#         assignment = Assignment.objects.get(id=assignment_id)
-#     except Exception as e:
-#         print(e)
+def single_class_view(request, assignment_id):
+    context = {}
+    try:
+        assignment = Assignment.objects.get(id=assignment_id)
+        code = assignment.schoolclass_set.all()[0].class_code
+        school_class = SchoolClass.objects.get(class_code = code)
+    except Exception as e:
+        print(e)
 
-#     context['school_class'] = school_class
-#     context['students'] = school_class.students.all()
-#     context['assignment'] = assignment
+    context['school_class'] = school_class
+    context['students'] = school_class.students.all()
+    context['assignment'] = assignment
 
-#     return render(request, 'single_class.html', context)
+    return render(request, 'single_class.html', context)
