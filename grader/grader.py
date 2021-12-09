@@ -1,32 +1,50 @@
 import os
 import subprocess
 
-
-# errorFile = open('additionError.txt', 'a')
-def RunCode():
-    inputFile = open('tempinput.txt', 'r')
-    outputFile = open('additionOutput.txt', 'a')
-    resultFile = open('result.txt', 'a')
-    errorFile = open('additionError.txt', 'a')
+def RunCode(singleInputPath, singleOutputPath, resultPath, errorPath, codePath):
+    sInputFile = open(singleInputPath, 'r')
+    sOutputFile = open(singleOutputPath, 'a')
+    resultFile = open(resultPath, 'a')
+    errorFile = open(errorPath, 'a')
+    errorFile.truncate(0)
+    sOutputFile.truncate(0)
     try:
-        out = subprocess.run('python3 addition.py', shell=True, stdin=inputFile, stdout=outputFile, stderr=errorFile, timeout=1)
-        print(out.returncode)
-        print("STDERR ", out.stderr)
+        out = subprocess.run('python3 '+codePath, shell=True, stdin=sInputFile, stdout=sOutputFile, stderr=errorFile, timeout=1)
+        if out.returncode == 1:
+            errorFile.close()
+            errorFile = open(errorPath, 'r')
+            for line in errorFile.readlines():
+                print(line,file=resultFile,end='')
+            print("NEWTESTCASE", file = resultFile, end ='\n')
+        else:
+            sOutputFile.close()
+            sOutputFile = open(singleOutputPath, 'r')
+            for line in sOutputFile.readlines():
+                print(line,file=resultFile,end='')
+            print("NEWTESTCASE", file = resultFile, end ='\n')
     except subprocess.TimeoutExpired:
-        print("TIME LIMIT EXCEEDED",file=resultFile, end='\n')
-        print()
+        print("TIME LIMIT EXCEEDED",file=resultFile, end='\nNEWTESTCASE\n')
+    sOutputFile.close()
+    resultFile.close()
+    errorFile.close()
+    sInputFile.close()
 
-def fileSplitter(inputPath, tempPath):
-    tempFile = open(tempPath, 'a')
-    lines = open(inputPath, 'r').readlines()
+def fileSplitter(fullInputPath, singleInputPath, singleOutputPath, resultPath, errorPath, codePath):
+    singleInputFile = open(singleInputPath, 'a')
+    singleInputFile.truncate(0)
+    lines = open(fullInputPath, 'r').readlines()
     for line in lines:
         if line == '\n':
-            tempFile.close()
-            #testcode
-            tempFile = open(tempPath, 'a')
-            tempFile.truncate(0)
+            singleInputFile.close()
+            RunCode(singleInputPath, singleOutputPath, resultPath, errorPath, codePath)
+            singleInputFile = open(singleInputPath, 'a')
+            singleInputFile.truncate(0)
             continue
-        print(line,file=tempFile, end='')
+        print(line,file=singleInputFile, end='')
+    singleInputFile.truncate(0)
+    singleInputFile.close()
 
+def CompareFiles():
+    pass
 
-fileSplitter('additionInput.txt', 'tempinput.txt')
+fileSplitter('input.txt', 'singleInput.txt', 'singleOutput.txt', 'results.txt', 'singleError.txt', 'addition.py')
