@@ -88,4 +88,9 @@ class Migration(migrations.Migration):
             name='student',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.student'),
         ),
+        migrations.AddField(
+            model_name='answer',
+            name='student',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.student'),
+        ),
     ]

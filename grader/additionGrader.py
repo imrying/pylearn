@@ -22,16 +22,34 @@ def RunAllInput(inputFilePath, outputFilePath, codeFilePath):
             else:
                 tempinput += line
 
-def RunCode(inputLines, outputFilePath, codeFilePath):
-    outputFile = open(outputFilePath, 'a')
+# def RunCode(inputLines, outputFilePath, codeFilePath):
+#     outputFile = open(outputFilePath, 'a')
+#     try:
+#         out = subprocess.run('/usr/local/bin/python3 '+ codeFilePath, input=inputLines, stdout=outputFile, shell=True, timeout=1, stderr="/Users/benjaminhilton/gradertester/additionOutput.txt", text=True)
+#     except subprocess.TimeoutExpired:
+#         return 10
+#     return out.returncode
+    
+
+x = "/Users/benjaminhilton/programming/pylearn/grader/additionInput.txt"
+y = "/Users/benjaminhilton/programming/pylearn/grader/additionOutput.txt"
+w = "/Users/benjaminhilton/programming/pylearn/grader/additionError.txt"
+z = "addition.py"
+# RunAllInput(x,y,z)
+# print(RunCode(x,y,z))
+
+def RunCode(codeFilePath, inputPath, outputPath, errorPath):
+    inputFile = open(inputPath, 'r')
+    outputFile = open(outputPath, 'a')
+    errorFile = open(errorPath, 'a')
     try:
-        out = subprocess.run('/usr/local/bin/python3 '+ codeFilePath, input=inputLines, stdout=outputFile, shell=True, timeout=1, stderr=w, text=True)
+        out = subprocess.run('/usr/local/bin/python3 '+ codeFilePath, input=inputFile, stdout=outputFile, shell=True, timeout=1, stderr=errorFile, text=True)
     except subprocess.TimeoutExpired:
         return 10
     return out.returncode
-    
 
-x = "/Users/benjaminhilton/gradertester/additionInput.txt"
-y = "/Users/benjaminhilton/gradertester/additionOutput.txt"
-z = "addition.py"
-RunAllInput(x,y,z)
+# print(RunCode(z, x, y, w))
+inputFile = open("additionInput.txt", 'r')
+outputFile = open("additionOutput.txt", 'a')
+# errorFile = open("add", 'a')
+out = subprocess.run('/usr/local/bin/python3 addition.py', input=inputFile, stdout=outputFile, shell=True, timeout=1)
