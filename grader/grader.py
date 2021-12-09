@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 
 def RunCode(singleInputPath, singleOutputPath, resultPath, errorPath, codePath):
@@ -30,6 +31,9 @@ def RunCode(singleInputPath, singleOutputPath, resultPath, errorPath, codePath):
     sInputFile.close()
 
 def fileSplitter(fullInputPath, singleInputPath, singleOutputPath, resultPath, errorPath, codePath):
+    resultFile = open(resultPath, 'a')
+    resultFile.truncate(0)
+    resultFile.close()
     singleInputFile = open(singleInputPath, 'a')
     singleInputFile.truncate(0)
     lines = open(fullInputPath, 'r').readlines()
@@ -44,7 +48,40 @@ def fileSplitter(fullInputPath, singleInputPath, singleOutputPath, resultPath, e
     singleInputFile.truncate(0)
     singleInputFile.close()
 
-def CompareFiles():
-    pass
+def CompareFiles(testcases):
+    torf = []
+    sys.stdin = open('results.txt', 'r')
+    userResults = sys.stdin.read().split()
+    sys.stdin = open('correctResults.txt', 'r')
+    correctResults = sys.stdin.read().split()
+    userindex = 0
+    correctindex = 0
+
+    for _ in range(testcases):
+        singleCorrectResult = []
+        singleUserResult = []
+        correct = True
+        while (True):
+            if (correctResults[correctindex] == 'NEWTESTCASE'):
+                correctindex += 1
+                break
+            singleCorrectResult.append(correctResults[correctindex])
+            correctindex += 1
+        while True:
+            if (userResults[userindex] == 'NEWTESTCASE'):
+                userindex += 1
+                break
+            singleUserResult.append(userResults[userindex])
+            userindex += 1
+        if (len(singleUserResult) != len(singleCorrectResult)):
+            correct = False
+        else:
+            for j in range(len(singleUserResult)):
+                if (singleUserResult[j] != singleCorrectResult[j]):
+                    correct = False
+        torf.append(correct)
+    return torf
+
 
 fileSplitter('input.txt', 'singleInput.txt', 'singleOutput.txt', 'results.txt', 'singleError.txt', 'addition.py')
+print(CompareFiles(3))
