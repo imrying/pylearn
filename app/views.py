@@ -12,6 +12,7 @@ import re
 from django.core.files.storage import FileSystemStorage
 import datetime
 import app.grader.grader as grader
+import sys
 
 
 from .models import *
@@ -450,8 +451,10 @@ def grade_assignment(assignment, student, submission):
                         code
                         )
 
-    print(grader.CompareFiles(results, output))
-
+    grades = grader.CompareFiles(results, output)
+    print(grades)
+    submission.grades = grades
+    submission.save()
     #grader.fileSplitter()
 
 def get_path(file_name):
@@ -484,12 +487,25 @@ def single_class_view(request, assignment_id):
         assignment_answers.append({
             "username": i.student.username,
             "code": i.code,
-            "results": i.results
+            "results": i.results,
+            "grades": "{:.2f}".format(sum([x == 't' for x in i.grades])/len(i.grades)*100) + "%",
+            "gradestring": i.grades,
+            "input": get_list(assignment.test.test_case.input),
+            "output": get_list(i.results),
+            "expected_output": get_list(assignment.test.test_case.output),
         })
     context['assignment_answers'] = json.dumps(assignment_answers)
     
     return render(request, 'single_class.html', context)
 
+def get_list(file_name):
+    sys.stdin = open(get_path(file_name))
+    raw_list = sys.stdin.read().split('NEWTESTCASE')
+    new_list = []
+    for st in raw_list:
+        new_list.append(st.replace("\n", ""))
+    new_list.pop(-1)
+    return new_list
 
 def download(request, path):
     file_path = os.path.join(settings.MEDIA_ROOT, path)

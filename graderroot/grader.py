@@ -38,7 +38,7 @@ def fileSplitter(fullInputPath, singleInputPath, singleOutputPath, resultPath, e
     singleInputFile.truncate(0)
     lines = open(fullInputPath, 'r').readlines()
     for line in lines:
-        if line == '\n':
+        if line == 'NEWTESTCASE':
             singleInputFile.close()
             RunCode(singleInputPath, singleOutputPath, resultPath, errorPath, codePath)
             singleInputFile = open(singleInputPath, 'a')

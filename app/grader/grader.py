@@ -52,7 +52,7 @@ def fileSplitter(fullInputPath, singleInputPath, singleOutputPath, resultPath, e
     singleInputFile.close()
 
 def CompareFiles(student_answer, correct_answer):
-    torf = []
+    torf = ""
     sys.stdin = open(student_answer, 'r')
     userResults = sys.stdin.read().split()
     sys.stdin = open(correct_answer, 'r')
@@ -83,7 +83,8 @@ def CompareFiles(student_answer, correct_answer):
             for j in range(len(singleUserResult)):
                 if (singleUserResult[j] != singleCorrectResult[j]):
                     correct = False
-        torf.append(correct)
+        torf += "t" if correct else "f"
+
     return torf
 
 

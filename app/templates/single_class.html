@@ -24,7 +24,7 @@
                     <label for="cars"> <span> <h3> Elever </h3> </span>  </label>
                     </div>                      
                         <select class="form-select bg-primary" id="students" onchange="showStudentAssignment()">
-                          <option value="" selected = "selected"> Vælg klasse </option>
+                          <option value="" selected = "selected"> Vælg elev </option>
                           {% for student in students %}
                             <option value="{{student.username}}">{{student.username}}</option>
                           {% endfor %}
@@ -57,10 +57,22 @@
           for (var i = 0; i < g.length; i++) {
             var obj = g[i];
             if (obj.username == student_username) {
-              htmlcode += `<a href="/download/${obj.code}" > Download besvarelse <a>`;
+              htmlcode += `<h2> ${obj.grades} korrekte</h2>`;
+              htmlcode += `<table class="table">`;
+              htmlcode += '<tr> <th><h4>Input</h4></th> <th><h4>Dit output</h4></th> <th><h4>Forventet output</h4></th></tr>';
+              console.log(obj.output);
+              for (var item in obj.input) {
+                if (obj.gradestring[item] == 't') {
+                htmlcode += `<tr style="background:#d8ffb5"><td> <p> ${obj.input[item]} </p> </td> <td> <p> ${obj.output[item]} </p> </td> <td> <p> ${obj.expected_output[item]} </p> </td></tr>`;
+                } else {
+                  htmlcode += `<tr style="background:#ffbab5"><td> <p> ${obj.input[item]} </p> </td> <td> <p> ${obj.output[item]} </p> </td> <td> <p> ${obj.expected_output[item]} </p> </td></tr>`;
+                }
+              }
+              htmlcode += `</table>`;
+              htmlcode += `<a href="/download/${obj.code}" > Download besvarelse </a>`;
             }
+            document.getElementById('shown_answer').innerHTML = htmlcode;
           }
-          document.getElementById('shown_answer').innerHTML = htmlcode;
         }
           
       </script>
