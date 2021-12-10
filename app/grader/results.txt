@@ -1,0 +1,9 @@
+TIME LIMIT EXCEEDED
+NEWTESTCASE
+Traceback (most recent call last):
+  File "/home/philip/programming/pylearn/app/grader/addition.py", line 9, in <module>
+    a[1]=2
+IndexError: list assignment index out of range
+NEWTESTCASE
+55
+NEWTESTCASE

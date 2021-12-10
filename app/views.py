@@ -11,6 +11,7 @@ import json
 import re
 from django.core.files.storage import FileSystemStorage
 import datetime
+import app.grader.grader as grader
 
 
 from .models import *
@@ -165,8 +166,8 @@ def teacher_create_class(request):
 
         if len(class_name) < 1:
             context['error_messages'].append('Indtast venligst et navn')
-        if len(class_description) < 50:
-            context['error_messages'].append('Beskrivelsen skal min. indeholde 50 tegn')
+        if len(class_description) < 1:
+            context['error_messages'].append('Beskrivelsen skal min. indeholde 1 tegn')
 
         if len(context['error_messages']) == 0:
             try:
@@ -307,14 +308,14 @@ def teacher_create_assignment(request):
         # Check for errors
         if len(name) < 1:
             context['error_messages'].append('Venligst angiv et navn til opgaven')
-        if len(assignment_description) < 50:
-            context['error_messages'].append('Opgave beskrivelsen skal min. indeholde 50 tegn')
-        if len(input_description) < 50:
-            context['error_messages'].append('Input beskrivelsen skal min. indeholde 50 tegn')
-        if len(output_description) < 50:
-            context['error_messages'].append('Output beskrivelsen skal min. indeholde 50 tegn')
-        if len(limit_description) < 50:
-            context['error_messages'].append('Begrænsnings beskrivelsen skal min. indeholde 50 tegn')
+        if len(assignment_description) < 1:
+            context['error_messages'].append('Opgave beskrivelsen skal min. indeholde 1 tegn')
+        if len(input_description) < 1:
+            context['error_messages'].append('Input beskrivelsen skal min. indeholde 1 tegn')
+        if len(output_description) < 1:
+            context['error_messages'].append('Output beskrivelsen skal min. indeholde 1 tegn')
+        if len(limit_description) < 1:
+            context['error_messages'].append('Begrænsnings beskrivelsen skal min. indeholde 1 tegn')
         if not class_code:
             context['error_messages'].append('Angiv venligst en klasse')
         if not due_date:
@@ -327,7 +328,7 @@ def teacher_create_assignment(request):
         if len(context['error_messages']) == 0:
             fs = FileSystemStorage()
             input_name = "input" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + input_file.name
-            output_name = "output" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + input_file.name
+            output_name = "output" + username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + output_file.name
             fs.save(input_name, input_file)
             fs.save(output_name, output_file)
             test_case = TestCase(input=input_name, output=output_name)
@@ -401,26 +402,64 @@ def submission_view(request, assignment_id):
         fs.save(submission_name, submit_file)
         try: 
             assignment_answers = assignment.assignment_answers.all()
-            submission = []
+            submission = None
             for answer in assignment_answers:
                 if answer.student == student:
-                    submission.append(answer) 
-            if len(submission) == 0:
+                    submission = answer 
+            if submission == None:
                 raise ValueError("submission not found creating new")
             print("submission already exists deleting previous")
-            print(submission[0].code)
-            fs.delete(submission[0].code)
-            submission[0].code = submission_name
-            submission[0].save()
+            print(submission.code)
+            fs.delete(submission.code)
+            submission.code = submission_name
+            submission.save()
         except ValueError as e:
             print(e)
             submission = Answer(student = student, code = submission_name)
             submission.save()
             assignment.assignment_answers.add(submission)
             submission.save()
-       
+        grade_assignment(assignment, student, submission)    
+
+    
     context['assignment'] = assignment
+
+
     return render(request, 'submission.html', context)
+
+def grade_assignment(assignment, student, submission):
+    input = get_path(assignment.test.test_case.input)
+    output = get_path(assignment.test.test_case.output)
+
+    single_input = get_path('singleInput.txt')
+    single_output = get_path('singleOutput.txt')
+    single_error = get_path('singleError.txt')
+    
+    if submission.results == "":
+        submission.results = "results" + student.username + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + ".txt"
+        submission.save()
+
+    results = get_path(submission.results)
+    code = get_path(submission.code)
+
+    grader.fileSplitter(input, 
+                        single_input, 
+                        single_output, 
+                        results, 
+                        single_error, 
+                        code
+                        )
+
+    print(grader.CompareFiles(results, output))
+
+    #grader.fileSplitter()
+
+def get_path(file_name):
+    return(os.path.join(settings.MEDIA_ROOT, file_name))
+
+
+
+
 
 
 def single_class_view(request, assignment_id):
