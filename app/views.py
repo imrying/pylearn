@@ -207,10 +207,11 @@ def student_view(request):
     for school_class in student_classes:
         assignments += school_class.assignments.all()
     
-
+    
 
     student_assignments = []
     for i in assignments:
+        print("##############################################",str(i.due_date))
         student_assignments.append({
             "name": i.assignment_name,
             "assignment_description": i.assignment_description,
@@ -220,7 +221,7 @@ def student_view(request):
             "limit_description": i.limit_description,
             "class_name": i.schoolclass_set.all()[0].class_name,
             "class_code": i.schoolclass_set.all()[0].class_code,
-            "due_date": str(i.due_date)
+            "due_date": str(i.due_date),
         })
 
 
@@ -455,13 +456,38 @@ def grade_assignment(assignment, student, submission):
     print(grades)
     submission.grades = grades
     submission.save()
-    #grader.fileSplitter()
+    return redirect('/student/')
 
 def get_path(file_name):
     return(os.path.join(settings.MEDIA_ROOT, file_name))
 
 
 
+def assignment_view(request, assignment_id):
+    context = {}
+    assignment = Assignment.objects.get(id=assignment_id)
+    username = request.session['username']
+
+    _assignment_answers_ = assignment.assignment_answers.all()
+    
+    assignment_answers = []
+
+    for i in _assignment_answers_:
+        if username == i.student.username:
+            assignment_answers.append({
+                "username": i.student.username,
+                "code": i.code,
+                "results": i.results,
+                "grades": "{:.2f}".format(sum([x == 't' for x in i.grades])/len(i.grades)*100) + "%",
+                "gradestring": i.grades,
+                "input": get_list(assignment.test.test_case.input),
+                "output": get_list(i.results),
+                "expected_output": get_list(assignment.test.test_case.output),
+            })
+            break
+    context['assignment_answers'] = json.dumps(assignment_answers)
+
+    return render(request, 'assignment.html', context)
 
 
 
@@ -479,8 +505,7 @@ def single_class_view(request, assignment_id):
     context['assignment'] = assignment
 
     _assignment_answers_ = assignment.assignment_answers.all()
-    print(_assignment_answers_)
-
+    
     assignment_answers = []
 
     for i in _assignment_answers_:

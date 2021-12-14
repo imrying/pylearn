@@ -41,7 +41,7 @@ def fileSplitter(fullInputPath, singleInputPath, singleOutputPath, resultPath, e
     singleInputFile.truncate(0)
     lines = open(fullInputPath, 'r').readlines()
     for line in lines:
-        if line == '\n':
+        if line == 'NEWTESTCASE\n':
             singleInputFile.close()
             RunCode(singleInputPath, singleOutputPath, resultPath, errorPath, codePath)
             singleInputFile = open(singleInputPath, 'a')
@@ -60,6 +60,7 @@ def CompareFiles(student_answer, correct_answer):
     testcases = sum([x == 'NEWTESTCASE' for x in correctResults])
     userindex = 0
     correctindex = 0
+    print("#############################",testcases)
 
     for _ in range(testcases):
         singleCorrectResult = []

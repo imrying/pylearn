@@ -69,13 +69,13 @@
     </div>
 
      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-    <p>{{username}}</p>
     <script>
       function selectAssignment(obj) {
         obj = JSON.parse(decodeURIComponent(obj));
         console.log(obj);
         let html = `<h4>${obj.name} ${obj.class_name}</h4>`;
-        html += `<a href="submit/${obj.assignment_id}"> Aflever besvarelse </a>`
+        html += `<a href="${obj.assignment_id}"> Se besvarelse </a><br>`;
+        html += `<a href="submit/${obj.assignment_id}"> Aflever besvarelse</a>`;
         html += `<h5> Beskrivelse</h5>`;
         html += `<div class="text-wrap"><p>${obj.assignment_description}</p> </div>`;
         html += `<h5> Input</h5>`;
@@ -87,8 +87,8 @@
         html += `<h5> Afleveringsfrist</h5>`;
         html += `<p style="width:65%">${obj.due_date}</p>`;
 
+
         document.getElementById('assignment_description').innerHTML = html;
-        document.getElementById('assignment_description2').innerHTML = html2
       }
 
       function updateClassCode() {
@@ -101,7 +101,7 @@
         for (var i = 0; i < g.length; i++) {
           var obj = g[i];
           if (obj.class_code == class_code) {
-            htmlcode += "<div class='mb-2'> <button class='btn btn-secondary' onclick='selectAssignment(\"" + encodeURIComponent(JSON.stringify(obj)) + "\")'>" + obj.name+"</button><br> czx<Afleveringsfrist: " + obj.due_date + "</div>";
+            htmlcode += "<div class='mb-2'> <button class='btn btn-secondary' onclick='selectAssignment(\"" + encodeURIComponent(JSON.stringify(obj)) + "\")'>" + obj.name+"</button><br>Afleveringsfrist: " + obj.due_date + "</div>";
           }
         }
         document.getElementById('shown_assignments').innerHTML = htmlcode;

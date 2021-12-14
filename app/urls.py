@@ -13,5 +13,6 @@ urlpatterns = [
     path('', views.front_page, name='front_page_view'),
     path('teacher/<int:assignment_id>', views.single_class_view, name='single_class'),
     path('student/submit/<int:assignment_id>', views.submission_view, name="submission_view"),
-    path('download/<str:path>', views.download, name="download_view")
+    path('download/<str:path>', views.download, name="download_view"),
+    path('student/<int:assignment_id>', views.assignment_view, name='assignmentview')
 ]
